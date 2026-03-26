@@ -87,6 +87,7 @@ let TIER_HOLD_DECAY = 0.0032;
 
 // ---------- HUD ----------
 let showHUD = true;
+let showProgressBar = true;
 
 // ---------- Bomb / aftermath sequence ----------
 let tier6HoldMs = 0;
@@ -488,6 +489,7 @@ function draw() {
   pop();
 
   drawHUD();
+  drawBottomProgressBar();
 }
 
 function drawFakePhoto(idx, x, y, w, h) {
@@ -568,6 +570,99 @@ function drawHUDBar(x, y, w, h, t) {
   rect(x, y, w, h, smin(5));
   fill(255, 80, 120, 220);
   rect(x, y, w * constrain(t, 0, 1), h, smin(5));
+}
+
+function drawBottomProgressBar() {
+  if (!showProgressBar) return;
+
+  let padX = sx(18);
+  let barW = width - padX * 2;
+  let barH = max(sy(10), 8);
+  let x = padX;
+  let y = height - barH - sy(16);
+
+  let tier = getEmotionTier();
+  let intensity = constrain(heat, 0, 1);
+  let holdProgress = constrain(tier6HoldMs / tier6HoldTargetMs, 0, 1);
+
+  // Base fill shows overall intensity.
+  let fillProgress = intensity;
+
+  // At tier 6, use the hold-to-blast progress instead.
+  if (!blastActive && !calmActive && tier === 5) {
+    fillProgress = max(intensity, holdProgress);
+  }
+
+  push();
+  rectMode(CORNER);
+  noStroke();
+
+  // background track
+  fill(0, 28);
+  rect(x, y, barW, barH, smin(8));
+
+  // subtle outer glow
+  fill(255, 120, 150, 28);
+  rect(x - 1, y - 1, barW + 2, barH + 2, smin(9));
+
+  // phase-based fill
+  if (blastActive) {
+    let p = getBlastProgress();
+    fill(255, 120, 40, 230);
+    rect(x, y, barW * (1.0 - p), barH, smin(8));
+  } else if (calmActive) {
+    let p = getCalmProgress();
+    fill(90, 170, 255, 220);
+    rect(x, y, barW * (1.0 - p), barH, smin(8));
+  } else {
+    // live mode gradient-ish layered fill
+    let liveW = barW * fillProgress;
+
+    fill(255, 80, 120, 215);
+    rect(x, y, liveW, barH, smin(8));
+
+    fill(255, 170, 190, 90);
+    rect(x, y, liveW, barH * 0.45, smin(8));
+
+    // small pulse at high intensity
+    if (tier >= 4) {
+      let pulse = 0.82 + 0.18 * sin(frameCount * 0.18);
+      fill(255, 255, 255, 55 * pulse);
+      rect(x, y, liveW, barH * 0.22, smin(8));
+    }
+  }
+
+  // tier markers
+  for (let i = 1; i < 6; i++) {
+    let mx = x + (barW * i) / 6.0;
+    fill(255, 255, 255, 75);
+    rect(mx - 1, y + 1, 2, barH - 2, 2);
+  }
+
+  // current tier indicator
+  let markerX = x + barW * ((tier + 0.5) / 6.0);
+  fill(20, 180);
+  ellipse(markerX, y + barH * 0.5, barH * 1.45, barH * 1.45);
+  fill(255);
+  ellipse(markerX, y + barH * 0.5, barH * 0.82, barH * 0.82);
+
+  // tiny label above the bar
+  textAlign(LEFT, BOTTOM);
+  textSize(smin(12));
+  fill(20, 150);
+
+  let label = "tier " + (tier + 1) + "/6";
+
+  if (blastActive) {
+    label = "blast";
+  } else if (calmActive) {
+    label = "calm";
+  } else if (tier === 5) {
+    label = "tier 6 • " + floor(holdProgress * 100) + "%";
+  }
+
+  text(label, x, y - sy(6));
+  pop();
 }
 
 /* =========================
