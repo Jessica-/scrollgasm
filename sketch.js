@@ -297,38 +297,6 @@ function buildLayeredCompanionComment(tier, avoidGroup, avoidSoundKey) {
 
   return null;
 }
-function playLayeredCommentSound(phrase, tier = 0, intensity = 0, group = "core", delaySec = 0.06) {
-  let s = commentSounds[phrase];
-  if (!s) return;
-
-  let tierNorm = constrain(tier / 5.0, 0, 1);
-  let i = constrain(intensity, 0, 1);
-  let energy = constrain(tierNorm * 0.5 + i * 0.5, 0, 1);
-
-  let rateBase = 1.0;
-  let volumeBase = 0.8;
-
-  if (group === "core") {
-    rateBase = lerp(0.84, 1.08, energy);
-    volumeBase = lerp(0.35, 0.62, energy);
-  } else if (group === "style") {
-    rateBase = lerp(0.96, 1.30, energy);
-    volumeBase = lerp(0.30, 0.56, energy);
-  } else if (group === "emotion") {
-    rateBase = lerp(0.78, 1.18, pow(energy, 0.85));
-    volumeBase = lerp(0.38, 0.70, energy);
-  }
-
-  // small random variation makes overlap feel less robotic
-  rateBase *= random(0.97, 1.03);
-
-  if (blastActive) rateBase *= 1.05;
-  if (calmActive) rateBase *= 0.93;
-
-  s.rate(rateBase);
-  s.setVolume(volumeBase);
-  s.play(0, rateBase, volumeBase, delaySec);
-}
 
 function updateResponsiveLayout() {
   PHOTO = width;
