@@ -653,39 +653,6 @@ function drawSideMeter() {
   pop();
 }
 
-  // tier markers
-  for (let i = 1; i < 6; i++) {
-    let mx = x + (barW * i) / 6.0;
-    fill(255, 255, 255, 75);
-    rect(mx - 1, y + 1, 2, barH - 2, 2);
-  }
-
-  // current tier indicator
-  let markerX = x + barW * ((tier + 0.5) / 6.0);
-  fill(20, 180);
-  ellipse(markerX, y + barH * 0.5, barH * 1.45, barH * 1.45);
-  fill(255);
-  ellipse(markerX, y + barH * 0.5, barH * 0.82, barH * 0.82);
-
-  // tiny label above the bar
-  textAlign(LEFT, BOTTOM);
-  textSize(smin(12));
-  fill(20, 150);
-
-  let label = "tier " + (tier + 1) + "/6";
-
-  if (blastActive) {
-    label = "blast";
-  } else if (calmActive) {
-    label = "calm";
-  } else if (tier === 5) {
-    label = "tier 6 • " + floor(holdProgress * 100) + "%";
-  }
-
-  text(label, x, y - sy(6));
-  pop();
-}
-
 /* =========================
    Input
    ========================= */
