@@ -87,7 +87,7 @@ let TIER_HOLD_DECAY = 0.0032;
 
 // ---------- HUD ----------
 let showHUD = true;
-let showProgressBar = true;
+let showSideMeter = true;
 
 // ---------- Bomb / aftermath sequence ----------
 let tier6HoldMs = 0;
@@ -489,7 +489,7 @@ function draw() {
   pop();
 
   drawHUD();
-  drawBottomProgressBar();
+  drawSideMeter();
 }
 
 function drawFakePhoto(idx, x, y, w, h) {
@@ -572,23 +572,22 @@ function drawHUDBar(x, y, w, h, t) {
   rect(x, y, w * constrain(t, 0, 1), h, smin(5));
 }
 
-function drawBottomProgressBar() {
-  if (!showProgressBar) return;
-
-  let padX = sx(18);
-  let barW = width - padX * 2;
-  let barH = max(sy(10), 8);
-  let x = padX;
-  let y = height - barH - sy(16);
+function drawSideMeter() {
+  if (!showSideMeter) return;
 
   let tier = getEmotionTier();
   let intensity = constrain(heat, 0, 1);
   let holdProgress = constrain(tier6HoldMs / tier6HoldTargetMs, 0, 1);
 
-  // Base fill shows overall intensity.
-  let fillProgress = intensity;
+  // right side placement
+  let barW = max(sx(12), 10);
+  let barH = height * 0.42;
+  let x = width - barW - sx(14);
+  let y = height * 0.29;
+  let r = smin(8);
 
-  // At tier 6, use the hold-to-blast progress instead.
+  // what fills the bar
+  let fillProgress = intensity;
   if (!blastActive && !calmActive && tier === 5) {
     fillProgress = max(intensity, holdProgress);
   }
@@ -597,40 +596,62 @@ function drawBottomProgressBar() {
   rectMode(CORNER);
   noStroke();
 
-  // background track
-  fill(0, 28);
-  rect(x, y, barW, barH, smin(8));
+  // soft backing pill
+  fill(255, 255, 255, 120);
+  rect(x - sx(4), y - sy(4), barW + sx(8), barH + sy(8), r + smin(4));
 
-  // subtle outer glow
-  fill(255, 120, 150, 28);
-  rect(x - 1, y - 1, barW + 2, barH + 2, smin(9));
+  // track
+  fill(0, 30);
+  rect(x, y, barW, barH, r);
 
-  // phase-based fill
+  // fill from bottom upward
+  let fh = barH * fillProgress;
+  let fy = y + barH - fh;
+
   if (blastActive) {
     let p = getBlastProgress();
-    fill(255, 120, 40, 230);
-    rect(x, y, barW * (1.0 - p), barH, smin(8));
+    let blastRemaining = 1.0 - p;
+    fh = barH * blastRemaining;
+    fy = y + barH - fh;
+    fill(255, 110, 40, 230);
+    rect(x, fy, barW, fh, r);
   } else if (calmActive) {
     let p = getCalmProgress();
+    let calmRemaining = 1.0 - p;
+    fh = barH * calmRemaining;
+    fy = y + barH - fh;
     fill(90, 170, 255, 220);
-    rect(x, y, barW * (1.0 - p), barH, smin(8));
+    rect(x, fy, barW, fh, r);
   } else {
-    // live mode gradient-ish layered fill
-    let liveW = barW * fillProgress;
+    fill(255, 70, 120, 220);
+    rect(x, fy, barW, fh, r);
 
-    fill(255, 80, 120, 215);
-    rect(x, y, liveW, barH, smin(8));
+    fill(255, 200, 215, 80);
+    rect(x, fy, barW, fh * 0.35, r);
 
-    fill(255, 170, 190, 90);
-    rect(x, y, liveW, barH * 0.45, smin(8));
-
-    // small pulse at high intensity
     if (tier >= 4) {
-      let pulse = 0.82 + 0.18 * sin(frameCount * 0.18);
+      let pulse = 0.7 + 0.3 * sin(frameCount * 0.16);
       fill(255, 255, 255, 55 * pulse);
-      rect(x, y, liveW, barH * 0.22, smin(8));
+      rect(x, fy, barW, min(fh, sy(10)), r);
     }
   }
+
+  // tier tick marks
+  for (let i = 1; i < 6; i++) {
+    let ty = y + barH - (barH * i / 6.0);
+    fill(255, 255, 255, 95);
+    rect(x + sx(2), ty - 1, barW - sx(4), 2, 2);
+  }
+
+  // current tier dot
+  let markerY = y + barH - barH * ((tier + 0.5) / 6.0);
+  fill(20, 170);
+  ellipse(x + barW * 0.5, markerY, barW * 1.9, barW * 1.9);
+  fill(255);
+  ellipse(x + barW * 0.5, markerY, barW * 0.9, barW * 0.9);
+
+  pop();
+}
 
   // tier markers
   for (let i = 1; i < 6; i++) {
@@ -895,6 +916,7 @@ function touchEnded() {
 
 function keyPressed() {
   if (key === "h" || key === "H") showHUD = !showHUD;
+  if (key === "m" || key === "M") showSideMeter = !showSideMeter;
 }
 
 function estimateTouchReleaseVelocity() {
