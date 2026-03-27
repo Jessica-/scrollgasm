@@ -86,7 +86,7 @@ let TIER_HOLD_GAIN = 0.005;
 let TIER_HOLD_DECAY = 0.0032;
 
 // ---------- HUD ----------
-let showHUD = true;
+let showHUD = false;
 let showSideMeter = true;
 
 // ---------- Bomb / aftermath sequence ----------
