@@ -644,11 +644,11 @@ function drawSideMeter() {
   }
 
   // current tier dot
-  let markerY = y + barH - barH * ((tier + 0.5) / 6.0);
-  fill(20, 170);
-  ellipse(x + barW * 0.5, markerY, barW * 1.9, barW * 1.9);
-  fill(255);
-  ellipse(x + barW * 0.5, markerY, barW * 0.9, barW * 0.9);
+  // let markerY = y + barH - barH * ((tier + 0.5) / 6.0);
+  // fill(20, 170);
+  // ellipse(x + barW * 0.5, markerY, barW * 1.9, barW * 1.9);
+  // fill(255);
+  // ellipse(x + barW * 0.5, markerY, barW * 0.9, barW * 0.9);
 
   pop();
 }
